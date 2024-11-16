@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dark Web Forum</title>
+    <title>Dark Web Forum - Login/Register</title>
     <style>
         body {
             background-color: #000;
@@ -21,34 +21,49 @@
             border-bottom: 2px solid red;
         }
 
-        .container {
-            padding: 20px;
+        .auth-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        .thread {
+        .auth-box {
             background: #111;
+            padding: 20px;
             border: 1px solid #444;
-            padding: 15px;
-            margin-bottom: 15px;
+            border-radius: 5px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .auth-box h2 {
+            margin-bottom: 20px;
+            color: red;
+        }
+
+        .auth-box input, .auth-box button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            background: #333;
+            color: #fff;
             border-radius: 5px;
         }
 
-        .thread h2 {
-            color: #f00;
+        .auth-box button {
+            background: red;
+            cursor: pointer;
         }
 
-        .thread p {
-            color: #ccc;
+        .auth-box button:hover {
+            background: darkred;
         }
 
-        .reply {
-            margin-top: 10px;
-            border-top: 1px solid #333;
-            padding-top: 10px;
-        }
-
-        .reply p {
-            color: #aaa;
+        .container {
+            padding: 20px;
         }
 
         .footer {
@@ -71,31 +86,127 @@
 </head>
 <body>
     <div class="header">Dark Web Forum</div>
-    <div class="container">
-        <div class="thread">
-            <h2>Provider Insurance Logins</h2>
-            <p>
-                <strong>User:</strong> arnie <br>
-                I recently compromised a healthcare clinic and got access to a dump of provider logins. Would anyone like these? 
-                What can be done with access to provider portals anyway?
-            </p>
-            <div class="reply">
-                <p>
-                    <strong>User:</strong> NSA <br>
-                    A lot.
-                </p>
-            </div>
-        </div>
-        <div class="thread">
-            <h2>New Hacking Tools</h2>
-            <p>
-                <strong>User:</strong> hacker101 <br>
-                Found some interesting new tools for bypassing security. DM me if interested. Keep it low-key.
-            </p>
+
+    <!-- Login and Register Section -->
+    <div class="auth-container" id="authPage">
+        <div class="auth-box">
+            <h2 id="authTitle">Login</h2>
+            <input type="text" id="authUsername" placeholder="Enter username" required>
+            <input type="password" id="authPassword" placeholder="Enter password" required>
+            <button id="authButton" onclick="authenticate()">Login</button>
+            <p><a href="#" id="toggleAuth" onclick="toggleAuth()">Don't have an account? Register</a></p>
         </div>
     </div>
+
+    <!-- Main Content -->
+    <div class="container" id="mainPage" style="display: none;">
+        <h2>Welcome, <span id="welcomeUser"></span></h2>
+
+        <div class="upload-form">
+            <h2>Upload a Message and Image</h2>
+            <form id="uploadForm">
+                <label for="message">Your Message:</label>
+                <input type="text" id="message" name="message" placeholder="Type your message here..." required>
+
+                <label for="image">Upload an Image:</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
+
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+
+        <!-- Display Uploaded Content -->
+        <div class="uploaded-content" id="uploadedContent"></div>
+    </div>
+
     <div class="footer">
         <p>All Rights Reserved © 2024 | <a href="#">Terms of Use</a></p>
     </div>
+
+    <script>
+        // Temporary storage for users
+        let users = {}; // Format: { username: password }
+
+        let isLogin = true; // To toggle between login and register
+
+        function toggleAuth() {
+            isLogin = !isLogin;
+
+            // Update UI for login/register
+            document.getElementById('authTitle').innerText = isLogin ? "Login" : "Register";
+            document.getElementById('authButton').innerText = isLogin ? "Login" : "Register";
+            document.getElementById('toggleAuth').innerText = isLogin ? "Don't have an account? Register" : "Already have an account? Login";
+        }
+
+        function authenticate() {
+            const username = document.getElementById('authUsername').value;
+            const password = document.getElementById('authPassword').value;
+
+            if (isLogin) {
+                // Login flow
+                if (users[username] && users[username] === password) {
+                    alert("Login successful!");
+                    loadMainPage(username);
+                } else {
+                    alert("Invalid username or password!");
+                }
+            } else {
+                // Register flow
+                if (users[username]) {
+                    alert("Username already exists!");
+                } else if (username && password) {
+                    users[username] = password;
+                    alert("Registration successful! You can now login.");
+                    toggleAuth(); // Switch to login
+                } else {
+                    alert("Please enter a valid username and password!");
+                }
+            }
+        }
+
+        function loadMainPage(username) {
+            document.getElementById('authPage').style.display = 'none';
+            document.getElementById('mainPage').style.display = 'block';
+            document.getElementById('welcomeUser').innerText = username;
+        }
+
+        // Handle upload (same as before)
+        const form = document.getElementById('uploadForm');
+        const uploadedContent = document.getElementById('uploadedContent');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value;
+
+            const imageInput = document.getElementById('image');
+            const file = imageInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const imageUrl = e.target.result;
+
+                    const contentDiv = document.createElement('div');
+                    contentDiv.innerHTML = `
+                        <div class="thread">
+                            <h2>Uploaded Content</h2>
+                            <p><strong>Message:</strong> ${message}</p>
+                            <img src="${imageUrl}" alt="Uploaded Image">
+                        </div>
+                    `;
+                    uploadedContent.appendChild(contentDiv);
+
+                    form.reset();
+                };
+
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please upload an image!');
+            }
+        });
+    </script>
 </body>
 </html>

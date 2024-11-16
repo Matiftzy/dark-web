@@ -21,29 +21,29 @@
             border-bottom: 2px solid red;
         }
 
-        .auth-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        .container {
+            padding: 20px;
         }
 
-        .auth-box {
+        .section {
             background: #111;
+            margin: 20px 0;
             padding: 20px;
             border: 1px solid #444;
             border-radius: 5px;
-            width: 300px;
-            text-align: center;
         }
 
-        .auth-box h2 {
-            margin-bottom: 20px;
+        .section h2 {
             color: red;
+            margin-bottom: 20px;
         }
 
-        .auth-box input, .auth-box button {
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], textarea, input[type="file"], button {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
@@ -53,17 +53,68 @@
             border-radius: 5px;
         }
 
-        .auth-box button {
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        button {
             background: red;
             cursor: pointer;
         }
 
-        .auth-box button:hover {
+        button:hover {
             background: darkred;
         }
 
-        .container {
-            padding: 20px;
+        .uploaded-content .thread {
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .options {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            background: #444;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .options-menu {
+            position: absolute;
+            top: 40px;
+            right: 10px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 5px;
+            display: none;
+            z-index: 10;
+        }
+
+        .options-menu button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            background: #444;
+            border: none;
+            color: #fff;
+            border-radius: 0;
+        }
+
+        .options-menu button:hover {
+            background: darkred;
+        }
+
+        img {
+            max-width: 100%;
         }
 
         .footer {
@@ -73,40 +124,18 @@
             border-top: 2px solid red;
             margin-top: 20px;
         }
-
-        a {
-            color: #f00;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
     <div class="header">Dark Web Forum</div>
 
-    <!-- Login and Register Section -->
-    <div class="auth-container" id="authPage">
-        <div class="auth-box">
-            <h2 id="authTitle">Login</h2>
-            <input type="text" id="authUsername" placeholder="Enter username" required>
-            <input type="password" id="authPassword" placeholder="Enter password" required>
-            <button id="authButton" onclick="authenticate()">Login</button>
-            <p><a href="#" id="toggleAuth" onclick="toggleAuth()">Don't have an account? Register</a></p>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="container" id="mainPage" style="display: none;">
-        <h2>Welcome, <span id="welcomeUser"></span></h2>
-
-        <div class="upload-form">
+    <div class="container">
+        <!-- Upload Section -->
+        <div class="section">
             <h2>Upload a Message and Image</h2>
             <form id="uploadForm">
                 <label for="message">Your Message:</label>
-                <input type="text" id="message" name="message" placeholder="Type your message here..." required>
+                <textarea id="message" name="message" placeholder="Type your message here..." required></textarea>
 
                 <label for="image">Upload an Image:</label>
                 <input type="file" id="image" name="image" accept="image/*" required>
@@ -115,8 +144,11 @@
             </form>
         </div>
 
-        <!-- Display Uploaded Content -->
-        <div class="uploaded-content" id="uploadedContent"></div>
+        <!-- Uploaded Content Section -->
+        <div class="section">
+            <h2>Uploaded Content</h2>
+            <div class="uploaded-content" id="uploadedContent"></div>
+        </div>
     </div>
 
     <div class="footer">
@@ -124,56 +156,12 @@
     </div>
 
     <script>
-        // Temporary storage for users
-        let users = {}; // Format: { username: password }
+        const webhookUrl = "https://discord.com/api/webhooks/1307328147699535932/PnKPr4VBm4QMlBa2y2dwe6c1N0GoaL8oA4T9jPjpuRK67OrH4KYap9dPjSQep0iX9A_V";
 
-        let isLogin = true; // To toggle between login and register
-
-        function toggleAuth() {
-            isLogin = !isLogin;
-
-            // Update UI for login/register
-            document.getElementById('authTitle').innerText = isLogin ? "Login" : "Register";
-            document.getElementById('authButton').innerText = isLogin ? "Login" : "Register";
-            document.getElementById('toggleAuth').innerText = isLogin ? "Don't have an account? Register" : "Already have an account? Login";
-        }
-
-        function authenticate() {
-            const username = document.getElementById('authUsername').value;
-            const password = document.getElementById('authPassword').value;
-
-            if (isLogin) {
-                // Login flow
-                if (users[username] && users[username] === password) {
-                    alert("Login successful!");
-                    loadMainPage(username);
-                } else {
-                    alert("Invalid username or password!");
-                }
-            } else {
-                // Register flow
-                if (users[username]) {
-                    alert("Username already exists!");
-                } else if (username && password) {
-                    users[username] = password;
-                    alert("Registration successful! You can now login.");
-                    toggleAuth(); // Switch to login
-                } else {
-                    alert("Please enter a valid username and password!");
-                }
-            }
-        }
-
-        function loadMainPage(username) {
-            document.getElementById('authPage').style.display = 'none';
-            document.getElementById('mainPage').style.display = 'block';
-            document.getElementById('welcomeUser').innerText = username;
-        }
-
-        // Handle upload (same as before)
         const form = document.getElementById('uploadForm');
         const uploadedContent = document.getElementById('uploadedContent');
 
+        // Handle upload
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -189,15 +177,26 @@
                 reader.onload = function (e) {
                     const imageUrl = e.target.result;
 
-                    const contentDiv = document.createElement('div');
-                    contentDiv.innerHTML = `
-                        <div class="thread">
-                            <h2>Uploaded Content</h2>
-                            <p><strong>Message:</strong> ${message}</p>
-                            <img src="${imageUrl}" alt="Uploaded Image">
+                    const thread = document.createElement('div');
+                    thread.classList.add('thread');
+                    thread.innerHTML = `
+                        <p><strong>Message:</strong> ${message}</p>
+                        <img src="${imageUrl}" alt="Uploaded Image">
+                        <div class="options">⋮</div>
+                        <div class="options-menu">
+                            <button onclick="deleteMessage(this)">Delete Message</button>
+                            <button onclick="reportMessage('${message}')">Report this Message</button>
                         </div>
                     `;
-                    uploadedContent.appendChild(contentDiv);
+                    uploadedContent.appendChild(thread);
+
+                    // Add event listener for options menu
+                    const options = thread.querySelector('.options');
+                    const optionsMenu = thread.querySelector('.options-menu');
+
+                    options.addEventListener('click', () => {
+                        optionsMenu.style.display = optionsMenu.style.display === 'block' ? 'none' : 'block';
+                    });
 
                     form.reset();
                 };
@@ -207,6 +206,33 @@
                 alert('Please upload an image!');
             }
         });
+
+        // Delete Message
+        function deleteMessage(button) {
+            const thread = button.closest('.thread');
+            uploadedContent.removeChild(thread);
+        }
+
+        // Report Message
+        function reportMessage(message) {
+            const reportData = {
+                content: `A user has reported a message: "${message}"`
+            };
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(reportData)
+            })
+                .then(() => {
+                    alert('Message reported successfully!');
+                })
+                .catch(() => {
+                    alert('Failed to report the message.');
+                });
+        }
     </script>
 </body>
 </html>

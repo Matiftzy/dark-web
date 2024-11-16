@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dark Web Forum - Login/Register</title>
+    <title>Dark Web Forum</title>
     <style>
         body {
             background-color: #000;
@@ -43,7 +43,7 @@
             margin-bottom: 5px;
         }
 
-        input[type="text"], textarea, input[type="file"], button {
+        input[type="text"], input[type="password"], textarea, input[type="file"], button {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
@@ -124,14 +124,33 @@
             border-top: 2px solid red;
             margin-top: 20px;
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="header">Dark Web Forum</div>
 
     <div class="container">
+        <!-- Login/Register Section -->
+        <div class="section" id="authSection">
+            <h2>Login or Register</h2>
+            <form id="authForm">
+                <label for="username">Username:</label>
+                <input type="text" id="username" placeholder="Enter username" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter password" required>
+
+                <button type="submit">Login</button>
+                <p>Or <a href="#" id="registerToggle">Register</a></p>
+            </form>
+        </div>
+
         <!-- Upload Section -->
-        <div class="section">
+        <div class="section hidden" id="uploadSection">
             <h2>Upload a Message and Image</h2>
             <form id="uploadForm">
                 <label for="message">Your Message:</label>
@@ -145,7 +164,7 @@
         </div>
 
         <!-- Uploaded Content Section -->
-        <div class="section">
+        <div class="section hidden" id="contentSection">
             <h2>Uploaded Content</h2>
             <div class="uploaded-content" id="uploadedContent"></div>
         </div>
@@ -158,15 +177,36 @@
     <script>
         const webhookUrl = "https://discord.com/api/webhooks/1307328147699535932/PnKPr4VBm4QMlBa2y2dwe6c1N0GoaL8oA4T9jPjpuRK67OrH4KYap9dPjSQep0iX9A_V";
 
+        const authSection = document.getElementById('authSection');
+        const uploadSection = document.getElementById('uploadSection');
+        const contentSection = document.getElementById('contentSection');
+
+        const authForm = document.getElementById('authForm');
+        const registerToggle = document.getElementById('registerToggle');
+        let isRegistered = false;
+
+        authForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!isRegistered) {
+                alert('User registered successfully!');
+                isRegistered = true;
+                registerToggle.innerText = 'Login';
+                return;
+            }
+            authSection.classList.add('hidden');
+            uploadSection.classList.remove('hidden');
+            contentSection.classList.remove('hidden');
+        });
+
+        // Handle upload
         const form = document.getElementById('uploadForm');
         const uploadedContent = document.getElementById('uploadedContent');
 
-        // Handle upload
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
             const messageInput = document.getElementById('message');
-            const message = messageInput.value;
+            const message = messageInput.value.replace(/\n/g, '<br>');
 
             const imageInput = document.getElementById('image');
             const file = imageInput.files[0];
@@ -185,12 +225,11 @@
                         <div class="options">⋮</div>
                         <div class="options-menu">
                             <button onclick="deleteMessage(this)">Delete Message</button>
-                            <button onclick="reportMessage('${message}')">Report this Message</button>
+                            <button onclick="showReportBox(this)">Report this Message</button>
                         </div>
                     `;
                     uploadedContent.appendChild(thread);
 
-                    // Add event listener for options menu
                     const options = thread.querySelector('.options');
                     const optionsMenu = thread.querySelector('.options-menu');
 
@@ -207,31 +246,28 @@
             }
         });
 
-        // Delete Message
         function deleteMessage(button) {
             const thread = button.closest('.thread');
             uploadedContent.removeChild(thread);
         }
 
-        // Report Message
-        function reportMessage(message) {
-            const reportData = {
-                content: `A user has reported a message: "${message}"`
-            };
+        function showReportBox(button) {
+            const reason = prompt('Enter your reason for reporting this message:');
+            if (reason) {
+                const reportData = {
+                    content: `A user has reported a message with reason: "${reason}".`
+                };
 
-            fetch(webhookUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(reportData)
-            })
-                .then(() => {
-                    alert('Message reported successfully!');
+                fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reportData)
                 })
-                .catch(() => {
-                    alert('Failed to report the message.');
-                });
+                    .then(() => alert('Message reported successfully!'))
+                    .catch(() => alert('Failed to report the message.'));
+            }
         }
     </script>
 </body>
